@@ -1,0 +1,113 @@
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   annotations:
+#     kompose.cmd: kompose convert
+#     kompose.version: 1.22.0 (955b78124)
+#   creationTimestamp: null
+#   labels:
+#     io.kompose.service: search
+#   name: search
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       io.kompose.service: search
+#   strategy: {}
+#   template:
+#     metadata:
+#       annotations:
+#         kompose.cmd: kompose convert
+#         kompose.version: 1.22.0 (955b78124)
+#         sidecar.istio.io/statsInclusionPrefixes: cluster.outbound,cluster_manager,listener_manager,http_mixer_filter,tcp_mixer_filter,server,cluster.xds-grp,listener,connection_manager
+#         sidecar.istio.io/statsInclusionRegexps: http.*
+#       creationTimestamp: null
+#       labels:
+#         io.kompose.service: search
+#     spec:
+#       containers:
+#         - command:
+#             - search
+#           image: igorrudyk1/hotelreservation:latest
+#           name: hotel-reserv-search
+#           ports:
+#             - containerPort: 8082
+#           resources:
+#             requests:
+#               cpu: 100m
+#             limits:
+#               cpu: 1000m
+#       restartPolicy: Always
+# status: {}
+
+
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.22.0 (955b78124)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: search
+  name: search
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: search
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.22.0 (955b78124)
+        sidecar.istio.io/statsInclusionPrefixes: cluster.outbound,cluster_manager,listener_manager,http_mixer_filter,tcp_mixer_filter,server,cluster.xds-grp,listener,connection_manager
+        sidecar.istio.io/statsInclusionRegexps: http.*
+      creationTimestamp: null
+      labels:
+        io.kompose.service: search
+    spec:
+      containers:
+        - command:
+            - search
+          image: igorrudyk1/hotelreservation:latest
+          name: hotel-reserv-search
+          ports:
+            - containerPort: 8082
+          resources:
+            requests:
+              cpu: 100m
+            limits:
+              cpu: 1000m
+          env:
+            - name: JAEGER_ENDPOINT
+              value: "http://jaeger:14268/api/traces"
+            - name: JAEGER_AGENT_HOST
+              value: "jaeger"
+            - name: JAEGER_AGENT_PORT
+              value: "6831"
+            - name: JAEGER_SAMPLER_TYPE
+              value: "const"
+            - name: JAEGER_SAMPLER_PARAM
+              value: "1"
+            - name: JAEGER_REPORTER_LOG_SPANS
+              value: "true"
+            - name: JAEGER_SERVICE_NAME
+              value: "search"
+            # OpenTelemetry configuration
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://jaeger:4317"
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "grpc"
+            - name: OTEL_TRACES_SAMPLER
+              value: "always_on"
+            # Additional environment variables that might help
+            - name: JAEGER_DISABLED
+              value: "false"
+            - name: JAEGER_REPORTER_FLUSH_INTERVAL
+              value: "1s"
+      restartPolicy: Always
+status: {}
